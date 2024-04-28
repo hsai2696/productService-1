@@ -1,12 +1,12 @@
 package com.productservice.products.controllers;
 
-import com.productservice.products.dtos.ProductRequestDtoFS;
-import com.productservice.products.dtos.ProductResponseSelf;
+import com.productservice.products.dtos.*;
 import com.productservice.products.exceptions.ProductNotPresentException;
 import com.productservice.products.models.Category;
 import com.productservice.products.models.Product;
 import com.productservice.products.repositories.ProductRepository;
 import com.productservice.products.service.IProductService;
+import com.productservice.products.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,12 +18,14 @@ import java.util.stream.Collectors;
 
 @RestController
 public class ProductController {
-
     @Autowired
     IProductService productService;
 
     @Autowired
     ProductRepository productRepository;
+
+    @Autowired
+    UserService userService;
 
     @GetMapping("/products")
     public List<Product> getAllProducts(){
@@ -98,5 +100,31 @@ public class ProductController {
         return true;
     }
 
+    @PostMapping("/user/products")
+    public ResponseEntity<UserProductCreateResponseDto> createUserProduct(@RequestBody UserProductCreateRequestDto product){
+        UserProductCreateResponseDto productResponse = new UserProductCreateResponseDto();
+        System.out.println("check before calling user exist");
+        System.out.println(userService.checkUserExist(product.getEmail()));
+        System.out.println("check after calling user exist");
+
+        if(userService.checkUserExist(product.getEmail())){
+            ProductRequestDtoFS productDto = new ProductRequestDtoFS();
+            productDto.setTitle(product.getTitle());
+            productDto.setPrice(product.getPrice());
+
+            ProductResponseDtoFS productResponseDto = productService.createProduct(productDto);
+            productResponse.setTitle(productResponseDto.getTitle());
+            productResponse.setPrice(productResponseDto.getPrice());
+            productResponse.setEmail(product.getEmail());
+            return new ResponseEntity<>(productResponse, HttpStatus.OK);
+        }else{
+            productResponse.setErrorMessage("User with Email: "+product.getEmail()+" does not exist");
+            return new ResponseEntity<>(
+                    productResponse,
+                    HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+
+    }
 
 }

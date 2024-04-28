@@ -9,7 +9,7 @@ import lombok.Setter;
 public class ProductRequestDtoFS {
 
     private String title;
-    private float price;
+    private double price;
     private String description;
     private String category;
     private String image;

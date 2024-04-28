@@ -13,7 +13,8 @@ public class Product extends BaseModel{
 
     private String descr;
     private String image;
-    private float price;
+    private double price;
+    private String title;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Category category;
